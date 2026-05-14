@@ -49,15 +49,15 @@ function Set-Number([string]$value) {
 }
 
 function Change-Number {
-    $input = [Microsoft.VisualBasic.Interaction]::InputBox('화면에 표시할 숫자를 입력하세요.','숫자 변경',$script:label.Text)
+    $input = [Microsoft.VisualBasic.Interaction]::InputBox('Enter number to display:','Change Number',$script:label.Text)
     if (-not [string]::IsNullOrWhiteSpace($input)) {
         Set-Number $input
     }
 }
 
 $menu = New-Object System.Windows.Forms.ContextMenuStrip
-$changeItem = $menu.Items.Add('숫자 변경')
-$exitItem = $menu.Items.Add('종료')
+$changeItem = $menu.Items.Add('Change Number')
+$exitItem = $menu.Items.Add('Exit')
 $changeItem.Add_Click({ Change-Number })
 $exitItem.Add_Click({ $form.Close() })
 $form.ContextMenuStrip = $menu
