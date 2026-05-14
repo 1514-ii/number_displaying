@@ -43,12 +43,27 @@ $form.Opacity = $opacity
 
 $label = New-Object System.Windows.Forms.Label
 $label.AutoSize = $true
-$label.Font = New-Object System.Drawing.Font('Segoe UI',11,[System.Drawing.FontStyle]::Bold)
+$label.Font = New-Object System.Drawing.Font('Segoe UI',21,[System.Drawing.FontStyle]::Bold)
 $label.ForeColor = [System.Drawing.Color]::Lime
 $label.BackColor = [System.Drawing.Color]::Black
 $label.Padding = New-Object System.Windows.Forms.Padding(8,0,8,0)
 $label.Text = $number
 $form.Controls.Add($label)
+
+$slider = New-Object System.Windows.Forms.TrackBar
+$slider.Minimum = 20
+$slider.Maximum = 100
+$slider.TickFrequency = 10
+$slider.SmallChange = 1
+$slider.LargeChange = 5
+$slider.Width = 140
+$slider.Height = 30
+$slider.Left = 8
+$slider.Top = $label.Bottom + 2
+$slider.BackColor = [System.Drawing.Color]::Black
+$slider.Visible = $false
+$slider.Value = [Math]::Round($opacity * 100)
+$form.Controls.Add($slider)
 
 function Set-Number([string]$value) {
     if ([string]::IsNullOrWhiteSpace($value)) { return }
@@ -56,7 +71,6 @@ function Set-Number([string]$value) {
     $script:label.Text = $v
     $v | Out-File -FilePath $script:configPath -Encoding ascii
 }
-
 
 function Set-Opacity([double]$value) {
     if ($value -lt 0.2 -or $value -gt 1.0) { return }
@@ -79,12 +93,29 @@ $opacity50 = $menu.Items.Add('Opacity 50%')
 $opacity25 = $menu.Items.Add('Opacity 25%')
 $exitItem = $menu.Items.Add('Exit')
 $changeItem.Add_Click({ Change-Number })
-$opacity100.Add_Click({ Set-Opacity 1.0 })
-$opacity75.Add_Click({ Set-Opacity 0.75 })
-$opacity50.Add_Click({ Set-Opacity 0.5 })
-$opacity25.Add_Click({ Set-Opacity 0.25 })
+$opacity100.Add_Click({ Set-Opacity 1.0; $script:slider.Value = 100 })
+$opacity75.Add_Click({ Set-Opacity 0.75; $script:slider.Value = 75 })
+$opacity50.Add_Click({ Set-Opacity 0.5; $script:slider.Value = 50 })
+$opacity25.Add_Click({ Set-Opacity 0.25; $script:slider.Value = 25 })
 $exitItem.Add_Click({ $form.Close() })
 $form.ContextMenuStrip = $menu
+
+$slider.Add_ValueChanged({
+    Set-Opacity ($script:slider.Value / 100.0)
+})
+
+$label.Add_MouseEnter({
+    $script:slider.Top = $script:label.Bottom + 2
+    $script:slider.Visible = $true
+})
+
+$form.Add_MouseLeave({
+    $script:slider.Visible = $false
+})
+
+$slider.Add_MouseLeave({
+    $script:slider.Visible = $false
+})
 
 $form.Add_MouseClick({
     param($sender, $e)
