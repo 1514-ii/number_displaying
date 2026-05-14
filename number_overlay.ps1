@@ -65,6 +65,30 @@ $slider.Visible = $false
 $slider.Value = [Math]::Round($opacity * 100)
 $form.Controls.Add($slider)
 
+$hoverLabel = $false
+$hoverSlider = $false
+$hideTimer = New-Object System.Windows.Forms.Timer
+$hideTimer.Interval = 500
+$hideTimer.Add_Tick({
+    $hideTimer.Stop()
+    if (-not $script:hoverLabel -and -not $script:hoverSlider) {
+        $script:slider.Visible = $false
+    }
+})
+
+function Show-Slider {
+    $script:hideTimer.Stop()
+    $script:slider.Top = $script:label.Bottom + 2
+    $script:slider.Visible = $true
+}
+
+function Try-Hide-Slider {
+    $script:hideTimer.Stop()
+    if (-not $script:hoverLabel -and -not $script:hoverSlider) {
+        $script:hideTimer.Start()
+    }
+}
+
 function Set-Number([string]$value) {
     if ([string]::IsNullOrWhiteSpace($value)) { return }
     $v = $value.Trim()
@@ -105,16 +129,27 @@ $slider.Add_ValueChanged({
 })
 
 $label.Add_MouseEnter({
-    $script:slider.Top = $script:label.Bottom + 2
-    $script:slider.Visible = $true
+    $script:hoverLabel = $true
+    Show-Slider
 })
 
-$form.Add_MouseLeave({
-    $script:slider.Visible = $false
+$label.Add_MouseLeave({
+    $script:hoverLabel = $false
+    Try-Hide-Slider
+})
+
+$slider.Add_MouseEnter({
+    $script:hoverSlider = $true
+    Show-Slider
 })
 
 $slider.Add_MouseLeave({
-    $script:slider.Visible = $false
+    $script:hoverSlider = $false
+    Try-Hide-Slider
+})
+
+$form.Add_MouseLeave({
+    Try-Hide-Slider
 })
 
 $form.Add_MouseClick({
